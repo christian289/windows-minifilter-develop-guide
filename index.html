@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Windows Minifilter 드라이버 개발 가이드</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content=".NET 개발자를 위한 Windows Minifilter 드라이버 개발 전자책">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta name="theme-color" content="#0078d4">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📘</text></svg>">
+
+  <!-- Vue Theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+
+  <!-- Custom Styles -->
+  <style>
+    :root {
+      --theme-color: #0078d4;
+      --theme-color-dark: #005a9e;
+      --sidebar-width: 320px;
+    }
+
+    /* 사이드바 스타일 */
+    .sidebar {
+      background-color: #f8f9fa;
+      border-right: 1px solid #e9ecef;
+    }
+
+    .sidebar-nav {
+      padding: 1rem;
+    }
+
+    .sidebar-nav li {
+      margin: 0.3rem 0;
+    }
+
+    .sidebar-nav a {
+      color: #333;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .sidebar-nav a:hover {
+      color: var(--theme-color);
+    }
+
+    .sidebar-nav a.active {
+      color: var(--theme-color);
+      font-weight: 600;
+    }
+
+    /* Part 제목 스타일 */
+    .sidebar-nav > ul > li > a {
+      font-weight: 600;
+      color: var(--theme-color-dark);
+      font-size: 0.95rem;
+    }
+
+    /* 본문 스타일 */
+    .markdown-section {
+      max-width: 900px;
+      padding: 2rem 3rem;
+    }
+
+    .markdown-section h1 {
+      color: var(--theme-color-dark);
+      border-bottom: 2px solid var(--theme-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .markdown-section h2 {
+      color: #333;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+    }
+
+    .markdown-section h3 {
+      color: #555;
+    }
+
+    /* 코드 블록 스타일 */
+    .markdown-section pre {
+      background-color: #1e1e1e;
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+
+    .markdown-section code {
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .markdown-section pre code {
+      color: #d4d4d4;
+    }
+
+    /* 인라인 코드 */
+    .markdown-section p code,
+    .markdown-section li code {
+      background-color: #f0f0f0;
+      color: #c7254e;
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+
+    /* 테이블 스타일 */
+    .markdown-section table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    .markdown-section table th {
+      background-color: var(--theme-color);
+      color: white;
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    .markdown-section table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .markdown-section table tr:hover {
+      background-color: #f5f5f5;
+    }
+
+    /* 블록 인용 */
+    .markdown-section blockquote {
+      border-left: 4px solid var(--theme-color);
+      background-color: #f8f9fa;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    /* 검색 스타일 */
+    .search {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .search input:focus {
+      outline: none;
+      border-color: var(--theme-color);
+      box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+    }
+
+    /* 네비게이션 버튼 */
+    .docsify-pagination-container {
+      border-top: 1px solid #eee;
+      margin-top: 3rem;
+      padding-top: 1rem;
+    }
+
+    /* 스크롤바 */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    /* 반응형 */
+    @media screen and (max-width: 768px) {
+      .markdown-section {
+        padding: 1rem;
+      }
+
+      :root {
+        --sidebar-width: 280px;
+      }
+    }
+
+    /* 커버 페이지 */
+    section.cover {
+      background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%) !important;
+    }
+
+    section.cover h1 {
+      color: white;
+    }
+
+    section.cover p {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    section.cover a.button {
+      background-color: white;
+      color: var(--theme-color);
+      border-radius: 4px;
+      padding: 0.75rem 2rem;
+    }
+
+    /* Copy code button */
+    .docsify-copy-code-button {
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">로딩 중...</div>
+
+  <script>
+    window.$docsify = {
+      name: '📘 Windows Minifilter 가이드',
+      repo: 'christian289/windows-minifilter-develop-guide',
+      loadSidebar: true,
+      subMaxLevel: 3,
+      auto2top: true,
+      coverpage: true,
+
+      // 검색 설정
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: '검색어를 입력하세요...',
+        noData: '검색 결과가 없습니다',
+        depth: 3,
+        hideOtherSidebarContent: false
+      },
+
+      // 페이지네이션
+      pagination: {
+        previousText: '이전',
+        nextText: '다음',
+        crossChapter: true,
+        crossChapterText: true
+      },
+
+      // 복사 버튼
+      copyCode: {
+        buttonText: '복사',
+        errorText: '오류',
+        successText: '복사됨!'
+      },
+
+      // 탭
+      tabs: {
+        persist: true,
+        sync: true,
+        theme: 'classic',
+        tabComments: true,
+        tabHeadings: true
+      },
+
+      // 알림
+      'flexible-alerts': {
+        style: 'callout',
+        note: {
+          label: "참고"
+        },
+        tip: {
+          label: "팁"
+        },
+        warning: {
+          label: "주의"
+        },
+        attention: {
+          label: "경고"
+        }
+      }
+    }
+  </script>
+
+  <!-- Docsify -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4"></script>
+
+  <!-- 검색 플러그인 -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+
+  <!-- 코드 복사 플러그인 -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
+
+  <!-- 페이지네이션 플러그인 -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination@2/dist/docsify-pagination.min.js"></script>
+
+  <!-- 코드 하이라이팅 -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-c.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-csharp.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-powershell.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-ini.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+
+  <!-- 이미지 줌 -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js"></script>
+</body>
+</html>
